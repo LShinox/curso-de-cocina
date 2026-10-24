@@ -1,0 +1,192 @@
+[
+ {
+  "sesion": "1.2",
+  "f": "img/platos/1-2-verduras-salteadas.webp",
+  "w": 800,
+  "h": 533,
+  "autor": "Ravi Sharma",
+  "url": "https://unsplash.com/photos/green-and-orange-vegetable-salad-in-white-ceramic-bowl-XBWjfCsQP4c",
+  "alt": "Brócoli, zanahoria y pimiento salteados en una sartén",
+  "kb": 34.4
+ },
+ {
+  "sesion": "2.1",
+  "f": "img/platos/2-1-huevos-pochados.webp",
+  "w": 800,
+  "h": 600,
+  "autor": "Seriously Low Carb",
+  "url": "https://unsplash.com/photos/white-ceramic-plate-with-food-D9oITNUCjAU",
+  "alt": "Huevos pochados sobre tostada",
+  "kb": 26.5
+ },
+ {
+  "sesion": "2.2",
+  "f": "img/platos/2-2-tortilla-espinaca.webp",
+  "w": 800,
+  "h": 533,
+  "autor": "Bakd&Raw by Karolin Baitinger",
+  "url": "https://unsplash.com/photos/a-white-plate-topped-with-an-omelet-and-greens-SCZP5rvZINk",
+  "alt": "Tortilla de huevo doblada con espinaca",
+  "kb": 28.1
+ },
+ {
+  "sesion": "2.3",
+  "f": "img/platos/2-3-arroz-con-pollo.webp",
+  "w": 800,
+  "h": 600,
+  "autor": "Dr Muhammad Amer",
+  "url": "https://unsplash.com/photos/fried-chicken-on-yellow-rice-77ItGP98s6g",
+  "alt": "Pollo sobre arroz amarillo",
+  "kb": 45.5
+ },
+ {
+  "sesion": "3.2",
+  "f": "img/platos/3-2-garbanzos-espinaca.webp",
+  "w": 800,
+  "h": 600,
+  "autor": "Benoit Roy",
+  "url": "https://unsplash.com/photos/a-bowl-of-soup-on-a-table-with-a-spoon-2TIqqhNPPjc",
+  "alt": "Guiso de garbanzos con espinaca",
+  "kb": 29.4
+ },
+ {
+  "sesion": "4.1",
+  "f": "img/platos/4-1-sopa-de-pollo.webp",
+  "w": 800,
+  "h": 532,
+  "autor": "Keesha's Kitchen",
+  "url": "https://unsplash.com/photos/a-bowl-of-soup-with-a-spoon-7ax3l4quF-M",
+  "alt": "Sopa de pollo con verduras en un plato hondo",
+  "kb": 42.9
+ },
+ {
+  "sesion": "4.3",
+  "f": "img/platos/4-3-crema-de-zapallo.webp",
+  "w": 800,
+  "h": 600,
+  "autor": "Elena Leya",
+  "url": "https://unsplash.com/photos/creamy-pumpkin-soup-with-parsley-and-bread-JELuDsF96tA",
+  "alt": "Crema de zapallo en un tazón",
+  "kb": 26.5
+ },
+ {
+  "sesion": "5.1",
+  "f": "img/platos/5-1-pechuga-plancha.webp",
+  "w": 800,
+  "h": 534,
+  "autor": "Mark DeYoung",
+  "url": "https://unsplash.com/photos/cooked-dish-mjcJ0FFgdWI",
+  "alt": "Pechuga de pollo a la plancha con limón",
+  "kb": 48.8
+ },
+ {
+  "sesion": "5.2",
+  "f": "img/platos/5-2-albondigas.webp",
+  "w": 800,
+  "h": 571,
+  "autor": "Kris Tian",
+  "url": "https://unsplash.com/photos/meatballs-in-tomato-sauce-with-focaccia-bread-ESwjkyuY-Sg",
+  "alt": "Albóndigas en salsa de tomate",
+  "kb": 26.7
+ },
+ {
+  "sesion": "6.1",
+  "f": "img/platos/6-1-pollo-al-horno.webp",
+  "w": 800,
+  "h": 600,
+  "autor": "Branimir Petakov",
+  "url": "https://unsplash.com/photos/brown-bread-with-yellow-fruits-HB0IbmJyyI8",
+  "alt": "Pollo al horno con papas",
+  "kb": 116.1
+ },
+ {
+  "sesion": "6.3",
+  "f": "img/platos/6-3-bizcocho-platano.webp",
+  "w": 800,
+  "h": 600,
+  "autor": "Jeff Siepman",
+  "url": "https://unsplash.com/photos/sliced-cakes-MssPSnkV1yM",
+  "alt": "Bizcocho de plátano en rebanadas",
+  "kb": 72.2
+ },
+ {
+  "sesion": "7.3",
+  "f": "img/platos/7-3-macarrones-gratinados.webp",
+  "w": 800,
+  "h": 600,
+  "autor": "Keith Hanson Jr",
+  "url": "https://unsplash.com/photos/a-dish-of-macaroni-and-cheese-with-a-spoon-in-it-VKI3lU4GA1w",
+  "alt": "Macarrones con queso gratinados",
+  "kb": 32.0
+ },
+ {
+  "sesion": "8.1",
+  "f": "img/platos/8-1-pescado-limon.webp",
+  "w": 800,
+  "h": 533,
+  "autor": "Keesha's Kitchen",
+  "url": "https://unsplash.com/photos/a-plate-of-fish-and-lemons-KRbF_wsztBE",
+  "alt": "Pescado con limón, tomate y cebolla",
+  "kb": 54.2
+ },
+ {
+  "sesion": "8.2",
+  "f": "img/platos/8-2-ceviche-camaron.webp",
+  "w": 800,
+  "h": 533,
+  "autor": "Yasmine Duchesne",
+  "url": "https://unsplash.com/photos/sliced-vegetables-in-clear-glass-container-mFmI0dHyF7k",
+  "alt": "Ceviche de camarón en un vaso",
+  "kb": 22.6
+ },
+ {
+  "sesion": "8.3",
+  "f": "img/platos/8-3-pescado-en-coco.webp",
+  "w": 800,
+  "h": 600,
+  "autor": "Diego Arenas de Rodrigo",
+  "url": "https://unsplash.com/photos/fish-curry-with-broccoli-tofu-and-rice-23PG8pCgn_Y",
+  "alt": "Pescado en salsa cremosa con arroz",
+  "kb": 50.2
+ },
+ {
+  "sesion": "10.1",
+  "f": "img/platos/10-1-pasta-tomate.webp",
+  "w": 800,
+  "h": 533,
+  "autor": "Homescreenify",
+  "url": "https://unsplash.com/photos/spaghetti-on-white-ceramic-plate-sA3wymYqyaI",
+  "alt": "Espagueti con salsa de tomate y albahaca",
+  "kb": 39.0
+ },
+ {
+  "sesion": "10.2",
+  "f": "img/platos/10-2-arroz-chaufa.webp",
+  "w": 800,
+  "h": 600,
+  "autor": "Pavan Reddy",
+  "url": "https://unsplash.com/photos/fried-rice-with-tofu-and-vegetables-in-a-bowl--4V4SjHPPDk",
+  "alt": "Arroz salteado con verduras",
+  "kb": 36.5
+ },
+ {
+  "sesion": "10.3",
+  "f": "img/platos/10-3-curry-pollo.webp",
+  "w": 800,
+  "h": 600,
+  "autor": "Rimsha Noor",
+  "url": "https://unsplash.com/photos/a-bowl-of-chicken-curry-next-to-a-bowl-of-rice-tsQhEvzU6MQ",
+  "alt": "Curry de pollo con arroz",
+  "kb": 26.1
+ },
+ {
+  "sesion": "bonus",
+  "f": "img/platos/bonus-tacos.webp",
+  "w": 800,
+  "h": 600,
+  "autor": "montatip lilitsanong",
+  "url": "https://unsplash.com/photos/egg-sandwich-on-white-ceramic-plate-iU26ZSJh9yw",
+  "alt": "Tacos con pico de gallo",
+  "kb": 39.0
+ }
+]
