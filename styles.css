@@ -300,3 +300,40 @@ details.mini summary { min-height: 2.75rem; display: flex; align-items: center; 
 .foto { margin: 0 0 1rem; }
 .foto img { display: block; width: 100%; height: auto; border-radius: .875rem; background: var(--tarjeta-2); object-fit: cover; }
 .fila.cred small { overflow-wrap: anywhere; }
+
+/* ---- v2.1: recetario, recomendador, cuestionario en blanco, nivel ---- */
+.ctl-s { display: block; color: var(--texto); font-size: 1.0625rem; font-weight: 600; }
+.ctl-d { display: block; color: var(--texto-2); font-size: .8125rem; font-weight: 400; margin-bottom: .25rem; }
+.st-v span { color: var(--texto-2); }
+.pie.falta { color: var(--aviso); font-weight: 600; margin-top: .25rem; }
+.pie.falta a { color: inherit; text-decoration: underline; }
+.btn[disabled] { cursor: not-allowed; }
+.tarjeta.aviso-n { background: var(--tarjeta-2); border: 1px solid var(--linea); font-size: .9375rem; }
+.tarjeta.aviso-n p { margin: 0; }
+.tarjeta.recom .chipsel.mom { margin: .25rem 0 .9rem; }
+.tarjeta.recom .grupo { background: var(--tarjeta-2); margin-bottom: .6rem; }
+.tarjeta.recom .btns { margin-top: .25rem; }
+.fila .razon { color: var(--acento); font-weight: 600; }
+.buscar { margin: 0 0 .75rem; }
+.buscar .ctl-e { margin: 0 .25rem .3rem; }
+.buscar .txt { -webkit-appearance: none; appearance: none; }
+#recFiltros .grupo.form { margin-bottom: .5rem; }
+#recFiltros .desp { margin-bottom: .75rem; }
+.chipsel .cs { min-width: 2.75rem; }
+.cocine { display: flex; align-items: center; flex-wrap: wrap; gap: .6rem; margin: .9rem 0 0; }
+.cocine small { color: var(--texto-2); font-size: .875rem; }
+.bloque.receta { scroll-margin-top: 4rem; }
+.tabbar a { min-width: 0; }
+.tabbar .et { white-space: nowrap; }
+/* ---- v2.4: planificador semanal y pantalla de logro ---- */
+.plan-fila { display: flex; align-items: stretch; }
+.plan-fila + .plan-fila { border-top: .5px solid var(--linea); }
+.plan-fila > .fila { flex: 1; min-width: 0; }
+.plan-fila > .fila + .fila { border-top: 0; }
+.etq-m { color: var(--acento); font-weight: 700; font-size: .75rem !important; text-transform: uppercase; letter-spacing: .04em; }
+.plan-camb { flex: none; min-width: 5rem; min-height: 2.75rem; padding: .4rem .75rem; border: 0; border-left: .5px solid var(--linea); background: transparent; color: var(--acento); font-weight: 600; font-size: .9375rem; cursor: pointer; }
+.plan-res { margin: .25rem .5rem .5rem; }
+.tarjeta.logro h2 { font-size: 1.5rem; }
+.desp-c .ctl { padding-left: 0; padding-right: 0; }
+/* v2.8: marca Cocina de Ecuador */
+.chip-ec { background: var(--ok-suave); color: var(--ok); border-color: var(--ok); font-size: .78rem; }

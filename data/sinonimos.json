@@ -1,0 +1,169 @@
+{
+ "_leeme": "Formato: nombre canonico (como esta en curso.json) -> {codigo de pais: nombre local}. Plural explicito con barra: \"jitomate|jitomates\". Si no hay barra se pluraliza solo la primera palabra. Paises: EC CO PE MX VE CL AR UY BO ES US OT. Si el nombre no cambia en un pais, no se pone.",
+ "tomate riñón": {
+  "MX": "jitomate|jitomates",
+  "CO": "tomate|tomates",
+  "PE": "tomate|tomates",
+  "VE": "tomate|tomates",
+  "CL": "tomate|tomates",
+  "AR": "tomate|tomates",
+  "UY": "tomate|tomates",
+  "BO": "tomate|tomates",
+  "ES": "tomate|tomates"
+ },
+ "aguacate": {
+  "PE": "palta|paltas",
+  "CL": "palta|paltas",
+  "AR": "palta|paltas",
+  "UY": "palta|paltas",
+  "BO": "palta|paltas"
+ },
+ "choclo": {
+  "MX": "elote|elotes",
+  "CO": "mazorca|mazorcas",
+  "VE": "jojoto|jojotos"
+ },
+ "frutilla": {
+  "MX": "fresa|fresas",
+  "CO": "fresa|fresas",
+  "PE": "fresa|fresas",
+  "VE": "fresa|fresas",
+  "ES": "fresa|fresas"
+ },
+ "arveja": {
+  "MX": "chícharo|chícharos",
+  "ES": "guisante|guisantes"
+ },
+ "cebolla paiteña": {
+  "PE": "cebolla roja|cebollas rojas",
+  "MX": "cebolla morada|cebollas moradas",
+  "CO": "cebolla morada|cebollas moradas",
+  "VE": "cebolla morada|cebollas moradas",
+  "CL": "cebolla morada|cebollas moradas",
+  "AR": "cebolla morada|cebollas moradas",
+  "UY": "cebolla morada|cebollas moradas",
+  "ES": "cebolla morada|cebollas moradas"
+ },
+ "cebolla larga": {
+  "PE": "cebolla china|cebollas chinas",
+  "AR": "cebolla de verdeo|cebollas de verdeo",
+  "UY": "cebolla de verdeo|cebollas de verdeo",
+  "ES": "cebolleta|cebolletas",
+  "CL": "cebollín|cebollines"
+ },
+ "papa chola": {
+  "MX": "papa|papas",
+  "CO": "papa|papas",
+  "PE": "papa|papas",
+  "VE": "papa|papas",
+  "CL": "papa|papas",
+  "AR": "papa|papas",
+  "UY": "papa|papas",
+  "BO": "papa|papas",
+  "ES": "patata|patatas"
+ },
+ "papa": {
+  "ES": "patata|patatas"
+ },
+ "culantro": {
+  "MX": "cilantro|cilantros",
+  "CO": "cilantro|cilantros",
+  "VE": "cilantro|cilantros",
+  "CL": "cilantro|cilantros",
+  "AR": "cilantro|cilantros",
+  "UY": "cilantro|cilantros",
+  "BO": "cilantro|cilantros",
+  "ES": "cilantro|cilantros"
+ },
+ "fréjol": {
+  "MX": "frijol|frijoles",
+  "CO": "fríjol|fríjoles",
+  "PE": "frijol|frijoles",
+  "VE": "caraota|caraotas",
+  "CL": "poroto|porotos",
+  "AR": "poroto|porotos",
+  "UY": "poroto|porotos",
+  "ES": "judía|judías"
+ },
+ "maní": {
+  "MX": "cacahuate|cacahuates",
+  "ES": "cacahuete|cacahuetes"
+ },
+ "zapallo": {
+  "MX": "calabaza|calabazas",
+  "ES": "calabaza|calabazas",
+  "CO": "ahuyama|ahuyamas",
+  "VE": "auyama|auyamas"
+ },
+ "pimiento": {
+  "MX": "pimiento morrón|pimientos morrones",
+  "AR": "morrón|morrones",
+  "UY": "morrón|morrones"
+ },
+ "mantequilla": {
+  "AR": "manteca|mantecas",
+  "UY": "manteca|mantecas"
+ },
+ "crema de leche": {
+  "MX": "crema|cremas",
+  "CL": "crema|cremas",
+  "ES": "nata|natas"
+ },
+ "remolacha": {
+  "MX": "betabel|betabeles",
+  "PE": "betarraga|betarragas",
+  "CL": "betarraga|betarragas"
+ },
+ "camote": {
+  "CO": "batata|batatas",
+  "VE": "batata|batatas",
+  "AR": "batata|batatas",
+  "ES": "boniato|boniatos",
+  "UY": "boniato|boniatos"
+ },
+ "yuca": {
+  "AR": "mandioca|mandiocas",
+  "UY": "mandioca|mandiocas"
+ },
+ "panela": {
+  "MX": "piloncillo|piloncillos",
+  "PE": "chancaca|chancacas",
+  "CL": "chancaca|chancacas",
+  "BO": "chancaca|chancacas",
+  "VE": "papelón|papelones"
+ },
+ "canguil": {
+  "MX": "palomitas|palomitas",
+  "ES": "palomitas|palomitas",
+  "CO": "crispetas|crispetas",
+  "VE": "cotufas|cotufas",
+  "CL": "cabritas|cabritas",
+  "AR": "pochoclo|pochoclos"
+ },
+ "zucchini": {
+  "MX": "calabacita|calabacitas",
+  "ES": "calabacín|calabacines",
+  "CL": "zapallo italiano|zapallos italianos"
+ },
+ "carne molida": {
+  "ES": "carne picada|carnes picadas"
+ },
+ "mora": {
+  "MX": "zarzamora|zarzamoras"
+ },
+ "pepas de zapallo": {
+  "MX": "pepitas de calabaza|pepitas de calabaza",
+  "ES": "pipas de calabaza|pipas de calabaza"
+ },
+ "jugo de limón": {
+  "ES": "zumo de limón|zumos de limón"
+ },
+ "jugo de naranja": {
+  "ES": "zumo de naranja|zumos de naranja"
+ },
+ "banano": {
+  "VE": "cambur|cambures",
+  "AR": "banana|bananas",
+  "UY": "banana|bananas"
+ }
+}
