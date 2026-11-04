@@ -11,7 +11,7 @@
     altura: true, sesiones: 3, minutos: 60, gustos: ['todo'], alergias: [], alergiaTxt: '', pais: 'EC', medidas: 'metrico'
   };
   function defaults() {
-    return { perfil: null, draft: null, hechas: {}, omitidas: {}, compras: {}, cocinadas: {}, leidoS0: false, tema: 'auto', escala: 100, nivelPlan: 1, logros: {}, plan: null };
+    return { perfil: null, draft: null, hechas: {}, omitidas: {}, compras: {}, cocinadas: {}, leidoS0: false, tema: 'auto', escala: 100, nivelPlan: 1, logros: {}, plan: null, precios: {}, timers: [] };
   }
   function cargar() {
     var s = defaults();
@@ -301,7 +301,8 @@
     atras: '<path d="M15 5l-7 7 7 7"/>',
     cerrar: '<path d="M6 6l12 12M18 6L6 18"/>',
     ok: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
-    sig: '<path d="M9 5l7 7-7 7"/>'
+    sig: '<path d="M9 5l7 7-7 7"/>',
+    lapiz: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>'
   };
   function ico(n, cls) { return '<svg class="ico ' + (cls || '') + '" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">' + ICON[n] + '</svg>'; }
 
@@ -506,7 +507,7 @@
     tabbar.hidden = oculta;
     document.body.classList.toggle('sin-tab', oculta);
     if (nombre !== 'cocinando') wake(false);
-    var tab = { hoy: 'hoy', curso: 'curso', semana: 'curso', guia: 'curso', inicio: 'curso', sesion: 'curso', recetas: 'recetas', planificador: 'recetas', logro: 'hoy', compras: 'compras', ajustes: 'ajustes', creditos: 'ajustes' }[nombre] || 'hoy';
+    var tab = { hoy: 'hoy', curso: 'curso', semana: 'curso', guia: 'curso', inicio: 'curso', sesion: 'curso', recetas: 'recetas', planificador: 'recetas', logro: 'hoy', compras: 'compras', precios: 'compras', ajustes: 'ajustes', creditos: 'ajustes', rescates: 'recetas', tecnicas: 'curso' }[nombre] || 'hoy';
     setTab(tab);
     var html = fn(seg);
     vista.innerHTML = html;
@@ -572,16 +573,16 @@
         if (e.kind === 'suma') parts[0].q = a.q;
         html = partes(parts, f, 'compra');
       }
-      porSec[e.sec].push({ k: k, o: e.o, opc: e.opc, html: html });
+      porSec[e.sec].push({ k: k, o: e.o, opc: e.opc, html: html, prod: e.key });
     });
     Object.keys(porSec).forEach(function (t) { porSec[t].sort(function (x, y) { return (x.opc - y.opc) || (x.o - y.o); }); });
     Object.keys(planos).forEach(function (b) {
       if (claves[b]) return;
-      porSec[planos[b].sec].push({ k: 'pl.' + b, o: 200, html: tx(planos[b].t) + ' <small class="para-servir">(para servir)</small>' });
+      porSec[planos[b].sec].push({ k: 'pl.' + b, o: 200, prod: b, html: tx(planos[b].t) + ' <small class="para-servir">(para servir)</small>' });
     });
     var dA = D.despensa.filter(function (d) { return desp[d]; });
     var dAbar = dA.filter(function (d) { return d !== 'mantequilla'; });
-    if (desp.mantequilla) porSec[SEC_ORD[1]].push({ k: 'desp.mantequilla', o: 210, html: 'Mantequilla' });
+    if (desp.mantequilla) porSec[SEC_ORD[1]].push({ k: 'desp.mantequilla', o: 210, prod: 'mantequilla', html: 'Mantequilla' });
     extra.forEach(function (t, i) { porSec[SEC_ORD[2]].push({ k: 'x.' + i, o: 220, html: tx(t) }); });
     if (dAbar.length) porSec[SEC_ORD[2]].push({ k: 'desp', o: 230, html: '<strong>Despensa básica:</strong> ' + sn(esc(dAbar.join(', '))) + ' <small class="para-servir">(revisa lo que ya tienes)</small>' });
     return SEC_ORD.map(function (t) { return { titulo: t, rows: porSec[t] }; }).filter(function (x) { return x.rows.length; });
@@ -664,6 +665,8 @@
     h += '<section class="tarjeta"><p class="etq">' + esc(nivelNom(nv)) + ' · tu plan</p><div class="prog-f"><strong>' + nHechasN(nv) + ' de ' + lvN.length + '</strong><span>sesiones hechas</span></div>' + barraProgreso(nHechasN(nv), lvN.length, 'Progreso del Nivel ' + nv) +
       '<p class="pie-c">' + (nivelCompleto(nv) ? 'Nivel completado. ' : '') + 'Todo está abierto: elige cualquier sesión cuando quieras. El plan solo sugiere el orden.</p>' +
       (nivelCompleto(nv) ? '<div class="btns"><a class="btn pri" href="#/logro/' + nv + '">Ver lo que aprendiste</a></div>' : '') + '</section>';
+    var td = tecResumen();
+    if (td[1]) h += '<div class="grupo"><a class="fila" href="#/tecnicas"><span class="fila-t"><strong>Lo que estás aprendiendo</strong><small>' + td[0] + ' de ' + td[1] + ' técnicas dominadas</small></span>' + ico('sig', 'sig') + '</a></div>';
     h += '<h2 class="gh">Para empezar</h2><div class="grupo">' +
       '<a class="fila" href="#/inicio"><span class="fila-t"><strong>Cómo funciona el curso</strong><small>Plan, reglas básicas, aviso médico</small></span>' + ico('sig', 'sig') + '</a>' +
       '<a class="fila" href="#/guia"><span class="marca' + (S.leidoS0 ? ' hecha' : '') + '">' + (S.leidoS0 ? ico('ok') : '0') + '</span><span class="fila-t"><strong>Semana 0 · Antes de empezar</strong><small>Seguridad, equipo, despensa' + (S.leidoS0 ? ' · leída' : ' · leer primero') + '</small></span>' + ico('sig', 'sig') + '</a></div>';
@@ -766,6 +769,118 @@
     });
     return h;
   }
+  /* ------------------------------------------------------------ reemplazos, rescates y técnicas */
+  function reemplazosDe(r) {
+    var p = P(), R = (D && D.reemplazos) || {}, gu = p.gustos || [], al = p.alergias || [], out = [], claves = [];
+    var palabras = String(p.alergiaTxt || '').split(/[,;\n]/).map(function (w) { return norm(w.trim()); }).filter(function (w) { return w.length > 2; });
+    ((r.compra && r.compra.items) || []).forEach(function (it) { if (it.key && claves.indexOf(it.key) < 0) claves.push(it.key); });
+    claves.forEach(function (c) {
+      var ops = (R[c] || []).filter(function (o) {
+        var a = o.alergenos || [], pl = norm(o.por || '');
+        if (a.some(function (x) { return al.indexOf(x) >= 0; })) return false;
+        if (palabras.some(function (w) { return contiene(pl, w); })) return false;
+        if (gu.indexOf('vegetariano') >= 0 && a.some(function (x) { return x === 'carne' || x === 'pescado' || x === 'mariscos'; })) return false;
+        if (gu.indexOf('sin_cerdo') >= 0 && /cerdo/i.test(o.por || '')) return false;
+        if (gu.indexOf('sin_mariscos') >= 0 && (a.indexOf('mariscos') >= 0 || /camar[oó]n/i.test(o.por || ''))) return false;
+        return true;
+      });
+      if (ops.length) out.push({ c: c, ops: ops });
+    });
+    return out;
+  }
+  function reemplHtml(r) {
+    return reemplazosDe(r).length ? '<p class="reempl-l"><button type="button" class="enlace-b" data-act="reempl" data-rid="' + esc(r.rid) + '">¿Te falta algo?</button></p>' : '';
+  }
+  function reemplLista(r) {
+    return reemplazosDe(r).map(function (g) {
+      return '<div class="reempl-g"><strong>' + cap(tx(g.c)) + '</strong><ul class="lista-txt">' + g.ops.map(function (o) {
+        return '<li>' + tx(o.por) + (o.nota ? ' · <small>' + md(o.nota) + '</small>' : '') + (o.noBebe ? ' <small>(no para bebés)</small>' : '') + '</li>';
+      }).join('') + '</ul></div>';
+    }).join('');
+  }
+  function abrirReempl(rid) {
+    var it = RBY[rid]; if (!it) return;
+    var dlg = $('#reemplDlg');
+    if (!dlg) {
+      dlg = document.createElement('dialog'); dlg.id = 'reemplDlg'; dlg.className = 'precio-dlg reempl-dlg';
+      document.body.appendChild(dlg);
+    }
+    dlg.innerHTML = '<h2>¿Te falta algo?</h2>' + reemplLista(it.r) +
+      '<p class="pie-c">Cambia el sabor y, a veces, el tiempo. Si hay alergias, revisa siempre la etiqueta.</p>' +
+      '<div class="btns"><button type="button" class="btn sec" data-act="reempl-cerrar">Cerrar</button></div>';
+    try { if (dlg.showModal) { if (!dlg.open) dlg.showModal(); } else dlg.setAttribute('open', ''); }
+    catch (e) { dlg.setAttribute('open', ''); }
+    var b = $('button', dlg); if (b) b.focus();
+  }
+  function cerrarReempl() {
+    var d = $('#reemplDlg'); if (!d) return;
+    try { if (d.close) d.close(); } catch (e) { /* ignorar */ }
+    d.removeAttribute('open');
+  }
+  var RESC = { q: '' };
+  function hayResc() { return !!(D && D.rescates && D.rescates.length); }
+  function rescFila(x) {
+    return '<div class="fila est resc"><span class="fila-t"><strong>' + esc(x.problema) + '</strong>' + (x.tirar ? ' <span class="chip chip-peli">Bótalo</span>' : '') +
+      '<small>' + md(x.solucion) + '</small></span></div>';
+  }
+  function rescHtml() {
+    var q = norm(String(RESC.q || '').trim()), lista = (D && D.rescates) || [], h = '';
+    if (!q) {
+      var cats = [];
+      lista.forEach(function (x) { if (cats.indexOf(x.cat) < 0) cats.push(x.cat); });
+      cats.forEach(function (c) {
+        h += '<h2 class="gh">' + esc(cap(c)) + '</h2><div class="grupo">' + lista.filter(function (x) { return x.cat === c; }).map(rescFila).join('') + '</div>';
+      });
+      return h;
+    }
+    var rs = lista.filter(function (x) { return norm(x.problema + ' ' + x.solucion).indexOf(q) >= 0; }).slice(0, 40);
+    var es = [];
+    SES.concat(EXT).forEach(function (s) {
+      (s.errores || []).forEach(function (t) { if (norm(t).indexOf(q) >= 0) es.push({ s: s, t: t }); });
+    });
+    es = es.slice(0, Math.max(0, 40 - rs.length));
+    if (!rs.length && !es.length) return '<p class="pie-c">No encontré eso. Prueba con otra palabra.</p>';
+    if (rs.length) h += '<div class="grupo">' + rs.map(rescFila).join('') + '</div>';
+    if (es.length) {
+      h += '<h2 class="gh">En las sesiones y recetas</h2><div class="grupo">' + es.map(function (e) {
+        return '<div class="fila est resc"><span class="fila-t">' + md(e.t) + '<small><a class="enlace-p" href="#/sesion/' + esc(e.s.id) + '">Ir a ' + esc(e.s.titulo) + '</a></small></span></div>';
+      }).join('') + '</div>';
+    }
+    return h;
+  }
+  rutas.rescates = function () {
+    var h = '<div class="buscar"><label class="ctl-e" for="rescQ">Escribe lo que pasó: sal, arroz, aceite, fuego…</label>' +
+      '<input id="rescQ" class="txt" type="search" inputmode="search" enterkeyhint="search" autocomplete="off" placeholder="Ej.: sal, arroz, aceite" value="' + esc(RESC.q) + '" data-resc="q"></div>';
+    h += '<div id="rescRes" aria-live="polite">' + rescHtml() + '</div>';
+    return pagina({ titulo: 'Si algo sale mal', atras: '#/recetas' }, h);
+  };
+  function tecEstado(t) {
+    var ses = (t.sesiones || []).map(function (id) { return BYID[id]; }).filter(function (s) { return s && !opcOff(s); });
+    var done = ses.filter(function (s) { return S.hechas[s.id]; }).length, tot = ses.length;
+    return { ses: ses, done: done, tot: tot, est: (tot > 0 && done === tot) ? 'Dominada' : (done > 0 ? 'En práctica' : 'Por aprender') };
+  }
+  function tecResumen() {
+    var T = (D && D.tecnicas) || [], dom = 0;
+    T.forEach(function (t) { if (tecEstado(t).est === 'Dominada') dom++; });
+    return [dom, T.length];
+  }
+  rutas.tecnicas = function () {
+    var T = (D && D.tecnicas) || [], niv = [], h = '';
+    T.forEach(function (t) { if (niv.indexOf(t.nivel) < 0) niv.push(t.nivel); });
+    niv.sort(function (a, b) { return a - b; });
+    niv.forEach(function (n) {
+      h += '<h2 class="gh">' + esc(nivelNom(n)) + '</h2><div class="grupo">' + T.filter(function (t) { return t.nivel === n; }).map(function (t) {
+        var e = tecEstado(t);
+        var lis = e.ses.map(function (s) { return '<li><a href="#/sesion/' + esc(s.id) + '">' + esc(s.titulo) + '</a>' + (S.hechas[s.id] ? ' <small>(hecha)</small>' : '') + '</li>'; }).join('');
+        return '<details class="tec"><summary class="fila"><span class="fila-t"><strong>' + esc(t.nombre) + '</strong><small>' + md(t.desc) + '</small>' +
+          '<small>' + e.done + ' de ' + e.tot + ' sesiones · ' + e.est + '</small>' + barraProgreso(e.done, e.tot, t.nombre) + '</span>' + ico('sig', 'sig') + '</summary>' +
+          '<ul class="lista-txt tec-l">' + lis + '</ul></details>';
+      }).join('') + '</div>';
+    });
+    if (!T.length) h += '<p class="pie-c">Todavía no hay técnicas para mostrar.</p>';
+    return pagina({ titulo: 'Lo que estás aprendiendo', atras: '#/curso' }, h);
+  };
+
   rutas.sesion = function (seg) {
     var s = BYID[seg[1]];
     if (!s) return rutas.curso(['curso']);
@@ -798,9 +913,10 @@
     (s.extras || []).forEach(function (e) { h += '<section class="bloque"><h2>' + md(e.titulo) + '</h2>' + bloques(e.bloques) + '</section>'; });
     s.recetas.forEach(function (r, ri) {
       h += '<section class="bloque receta" id="rec-' + ri + '"><h2>Receta' + (r.etiqueta ? ' ' + r.etiqueta : '') + ': ' + md(cap(r.titulo)) + '</h2>' + (origenDe(r) !== 'INT' ? '<p class="chips">' + chipOrigen(r) + '</p>' : '');
-      if (r.rinde) h += '<p class="rinde">Receta base: ' + md(r.rinde) + '.</p>';
+      var kc = Math.round(Number(r.kcal));
+      if (r.rinde || kc > 0) h += '<p class="rinde">' + (r.rinde ? 'Receta base: ' + md(r.rinde) + '.' : '') + (kc > 0 ? (r.rinde ? ' ' : '') + '<small class="kcal">≈ ' + kc + ' kcal por porción (aprox.)</small>' : '') + '</p>';
       h += bloques(r.intro);
-      h += '<h3 class="h3">Ingredientes</h3>' + ingredientesHtml(r, f);
+      h += '<h3 class="h3">Ingredientes</h3>' + ingredientesHtml(r, f) + reemplHtml(r);
       h += '<h3 class="h3">Pasos</h3><ol class="pasos">' + r.pasos.map(function (t) { return '<li>' + md(t) + '</li>'; }).join('') + '</ol>' + notaTiempos();
       h += bloques(r.notas);
       if (r.seguridad) h += '<h3 class="h3">Seguridad</h3><p>' + md(r.seguridad) + '</p>';
@@ -811,7 +927,7 @@
     if (p.bebe) h += stageBebe(s);
     if (s.errores.length || s.salioBien.length) {
       h += '<section class="bloque"><h2>Errores comunes y cómo saber si salió bien</h2><ul class="lista-txt">' + s.errores.map(function (t) { return '<li>' + md(t) + '</li>'; }).join('') + '</ul>' +
-        s.salioBien.map(function (t) { return '<p class="salio">' + md(t) + '</p>'; }).join('') + '</section>';
+        s.salioBien.map(function (t) { return '<p class="salio">' + md(t) + '</p>'; }).join('') + (hayResc() ? '<p class="pie-c"><a class="enlace-p" href="#/rescates">Ver más problemas</a></p>' : '') + '</section>';
     }
     if (s.reto) h += '<section class="bloque"><h2>Reto opcional</h2><p>' + md(s.reto) + '</p></section>';
     h += '<div class="relleno-accion"></div>';
@@ -846,9 +962,9 @@
     var body = '';
     var rotulo = cur.r ? (s.recetas.length > 1 ? 'Receta ' + (cur.r.etiqueta || (cur.ri + 1)) + ': ' : '') + cap(cur.r.titulo) : s.titulo;
     if (cur.tipo === 'ing') {
-      body = '<p class="ck-etq">Antes de empezar · prepara todo</p><h1 class="ck-t">' + md(rotulo) + '</h1><div class="ck-cuerpo ing-ck">' + ingredientesHtml(cur.r, f) + notaTiempos() + '</div>';
+      body = '<p class="ck-etq">Antes de empezar · prepara todo</p><h1 class="ck-t">' + md(rotulo) + '</h1><div class="ck-cuerpo ing-ck">' + ingredientesHtml(cur.r, f) + reemplHtml(cur.r) + notaTiempos() + '</div>';
     } else if (cur.tipo === 'paso') {
-      body = '<p class="ck-etq">' + md(rotulo) + ' · paso ' + cur.n + ' de ' + cur.tot + '</p><p class="ck-paso" id="ckPaso">' + md(cur.t) + '</p>';
+      body = '<p class="ck-etq">' + md(rotulo) + ' · paso ' + cur.n + ' de ' + cur.tot + '</p><p class="ck-paso" id="ckPaso">' + md(cur.t) + '</p>' + tmBotones(cur.t);
     } else {
       var hecha = S.hechas[s.id], cuh = S.cocinadas[s.recetas[0].rid] === hoyISO();
       if (s.extra) body = '<p class="ck-etq">Fin de la receta</p><h1 class="ck-t">¡Listo!</h1><p class="ck-paso peq">Guarda lo que sobre en recipientes tapados, dentro de la primera hora (arroz: enfríalo rápido y úsalo en 1 día).</p>' +
@@ -862,7 +978,7 @@
       '<div class="ck-main" id="ckMain">' + body + '</div>' +
       '<div class="ck-nav"><button class="btn sec ck-b" data-act="ckprev"' + (i === 0 ? ' disabled' : '') + '>‹ Anterior</button>' +
       (cur.tipo === 'fin' ? '' : '<button class="btn pri ck-b" data-act="cknext">' + (i === tot - 0 - 1 ? 'Terminar' : 'Siguiente ›') + '</button>') + '</div>' +
-      '<p class="ck-wake" id="ckWake" aria-live="polite"></p></div>';
+      (hayResc() ? '<p class="ck-resc-l"><a class="enlace-p" href="#/rescates">Si algo sale mal</a></p>' : '') + '<p class="ck-wake" id="ckWake" aria-live="polite"></p></div>';
     return h;
   };
   rutas.cocinando.post = function () {
@@ -909,6 +1025,7 @@
     h += seccionesCompras(L.secs, L.id);
     L.notas.forEach(function (t) { h += '<p class="pie">' + md(t) + '</p>'; });
     if (!esB && BYID.bonus && nv === 1 && n === tot) h += '<div class="grupo"><a class="fila" href="#/compras/bonus"><span class="fila-t"><strong>Lista del bonus: tacos</strong><small>Sesión extra, fuera del plan</small></span>' + ico('sig', 'sig') + '</a></div>';
+    if (hayRegistros()) h += '<p class="pie-c"><a href="#/precios">Mis marcas y precios</a></p>';
     h += '<div class="acciones-pie"><button class="btn sec" data-act="desmarcar" data-n="' + L.id + '">Desmarcar toda la lista</button></div>';
     return pagina({ titulo: 'Compras' }, h);
   };
@@ -917,11 +1034,227 @@
     secs.forEach(function (sec) {
       h += '<h2 class="gh">' + esc(sec.titulo) + '</h2><div class="grupo">' + sec.rows.map(function (r) {
         var k = 'c.' + id + '.' + r.k, on = !!S.compras[k];
-        return '<label class="fila chk' + (on ? ' on' : '') + '"><input type="checkbox" data-act="chk" data-k="' + esc(k) + '" data-l="' + id + '"' + (on ? ' checked' : '') + '><span class="caja">' + ico('ok') + '</span><span class="fila-t">' + r.html + '</span></label>';
+        var lab = '<label class="fila chk' + (on ? ' on' : '') + '"><input type="checkbox" data-act="chk" data-k="' + esc(k) + '" data-l="' + id + '"' + (on ? ' checked' : '') + '><span class="caja">' + ico('ok') + '</span><span class="fila-t">' + r.html + '</span></label>';
+        if (!r.prod) return lab;
+        return '<div class="plan-fila">' + lab + '<button type="button" class="precio-btn' + (registrosPrecio(r.prod).length ? ' con-dato' : '') + '" data-act="precio" data-prod="' + esc(r.prod) + '" aria-label="Anotar marca y precio">' + ico('lapiz') + '</button></div>';
       }).join('') + '</div>';
     });
     return h;
   }
+
+  /* ------------------------------------------------------------ v8A: MARCAS Y PRECIOS (anotados a mano, por producto) */
+  var PREC_MAX = 10;
+  function registrosPrecio(prod) { return (S.precios && S.precios[prod]) || []; }
+  function hayRegistros() { return Object.keys(S.precios || {}).some(function (k) { return registrosPrecio(k).length > 0; }); }
+  function fmtPrecio(n) {
+    if (n === null || n === undefined) return '';
+    var s = (Math.round(n * 100) / 100).toFixed(2);
+    return P().pais === 'EC' ? '$' + s : s;
+  }
+  function fechaCorta(f) { return f ? String(f).split('-').reverse().join('/') : ''; }
+  /* devuelve número, null (vacío) o NaN (no válido) */
+  function leerPrecio(t) {
+    t = String(t == null ? '' : t).trim();
+    if (!t) return null;
+    if (!/^\d+([.,]\d{1,2})?$/.test(t)) return NaN;
+    return parseFloat(t.replace(',', '.'));
+  }
+  function marcarPrecios(prod) {
+    var hay = registrosPrecio(prod).length > 0;
+    Array.prototype.forEach.call(document.querySelectorAll('[data-act="precio"]'), function (b) {
+      if (b.getAttribute('data-prod') === prod) b.classList.toggle('con-dato', hay);
+    });
+  }
+  function abrirPrecio(prod) {
+    if (!prod) return;
+    var dlg = $('#precioDlg');
+    if (!dlg) {
+      dlg = document.createElement('dialog'); dlg.id = 'precioDlg'; dlg.className = 'precio-dlg';
+      document.body.appendChild(dlg);
+    }
+    dlg.setAttribute('data-prod', prod);
+    pintarPrecio(dlg, prod);
+    try { if (dlg.showModal) { if (!dlg.open) dlg.showModal(); } else dlg.setAttribute('open', ''); }
+    catch (e) { dlg.setAttribute('open', ''); }
+    var mi = $('#pMarca', dlg); if (mi) mi.focus();
+  }
+  function cerrarPrecio() {
+    var d = $('#precioDlg'); if (!d) return;
+    try { if (d.close) d.close(); } catch (e) { /* ignorar */ }
+    d.removeAttribute('open');
+  }
+  function pintarPrecio(dlg, prod) {
+    var regs = registrosPrecio(prod), marcas = [];
+    regs.forEach(function (r) { if (r.m && marcas.indexOf(r.m) < 0) marcas.push(r.m); });
+    var h = '<h2>' + esc(cap(prod)) + '</h2>' +
+      '<label class="ctl-e" for="pMarca">Marca</label><input id="pMarca" class="txt" type="text" maxlength="60" list="pMarcas" autocomplete="off" placeholder="Ej.: La Favorita">' +
+      '<datalist id="pMarcas">' + marcas.map(function (m) { return '<option value="' + esc(m) + '"></option>'; }).join('') + '</datalist>' +
+      '<label class="ctl-e" for="pPrecio">Precio</label><input id="pPrecio" class="txt" type="text" inputmode="decimal" autocomplete="off" placeholder="Ej.: 1,25">' +
+      '<p class="pie-c" id="pMsg" aria-live="polite"></p>' +
+      '<div class="btns"><button type="button" class="btn pri" data-act="precio-guardar" data-prod="' + esc(prod) + '">Guardar</button><button type="button" class="btn sec" data-act="precio-cancelar">Cancelar</button></div>';
+    if (regs.length) {
+      h += '<div class="precio-ant"><p class="etq">Antes</p>' + regs.map(function (r, i) {
+        return '<div class="precio-reg"><span class="fila-t"><strong>' + esc(r.m || 'Sin marca') + '</strong><small>' + (typeof r.p === 'number' ? esc(fmtPrecio(r.p)) : 'sin precio') + ' · ' + esc(fechaCorta(r.f)) + '</small></span><button type="button" class="precio-x" data-act="precio-borrar" data-prod="' + esc(prod) + '" data-i="' + i + '" aria-label="Borrar este registro">' + ico('cerrar') + '</button></div>';
+      }).join('') + '</div>';
+    }
+    dlg.innerHTML = h;
+  }
+  function guardarPrecio(prod) {
+    var dlg = $('#precioDlg'); if (!dlg || !prod) return;
+    var m = String((($('#pMarca', dlg) || {}).value) || '').trim().slice(0, 60);
+    var p = leerPrecio(($('#pPrecio', dlg) || {}).value);
+    if (!m && p === null) return;   // sin marca ni precio: no hace nada
+    if (p !== null && isNaN(p)) { var msg = $('#pMsg', dlg); if (msg) msg.textContent = 'Escribe el precio con números, por ejemplo 1,25.'; return; }
+    if (!S.precios) S.precios = {};
+    var lista = registrosPrecio(prod).slice();
+    lista.unshift({ m: m, p: p, f: hoyISO() });
+    S.precios[prod] = lista.slice(0, PREC_MAX);
+    guardar(); cerrarPrecio(); marcarPrecios(prod);
+    toast('Marca y precio anotados');
+    if (ruta()[0] === 'precios') render();
+  }
+  function borrarPrecio(prod, i) {
+    var lista = registrosPrecio(prod).slice();
+    if (!(i >= 0 && i < lista.length)) return;
+    lista.splice(i, 1);
+    if (lista.length) S.precios[prod] = lista; else delete S.precios[prod];
+    guardar(); marcarPrecios(prod);
+    var dlg = $('#precioDlg');
+    if (dlg && dlg.getAttribute('data-prod') === prod && dlg.open) pintarPrecio(dlg, prod);
+    if (ruta()[0] === 'precios') render();
+  }
+  rutas.precios = function () {
+    var prods = Object.keys(S.precios || {}).filter(function (k) { return registrosPrecio(k).length > 0; })
+      .sort(function (a, b) { return cap(a).localeCompare(cap(b), 'es'); });
+    var hoy = new Date(), p2 = function (n) { return ('0' + n).slice(-2); };
+    var mAct = hoy.getFullYear() + '-' + p2(hoy.getMonth() + 1);
+    var pm = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1), mPrev = pm.getFullYear() + '-' + p2(pm.getMonth() + 1);
+    var tAct = 0, tPrev = 0;
+    prods.forEach(function (k) {
+      registrosPrecio(k).forEach(function (r) {
+        if (typeof r.p !== 'number') return;
+        var mm = String(r.f || '').slice(0, 7);
+        if (mm === mAct) tAct += r.p; else if (mm === mPrev) tPrev += r.p;
+      });
+    });
+    var h;
+    if (!prods.length) h = '<section class="tarjeta"><p>Todavía no anotaste ninguna marca ni precio. En tu lista de compras, toca el lápiz junto a un producto para anotar la marca y lo que pagaste.</p></section>';
+    else {
+      h = '<section class="tarjeta"><div class="prog-f"><strong>' + esc(fmtPrecio(tAct)) + '</strong><span>gastado este mes</span></div>' +
+        '<div class="prog-f"><strong>' + esc(fmtPrecio(tPrev)) + '</strong><span>el mes pasado</span></div>' +
+        '<p class="pie-c">Solo suma lo que anotaste.</p></section>';
+      h += '<h2 class="gh">Productos</h2><div class="grupo">' + prods.map(function (k) {
+        var r = registrosPrecio(k)[0];
+        return '<div class="plan-fila"><div class="fila est"><span class="fila-t"><strong>' + esc(cap(k)) + '</strong><small>' + esc(r.m || 'Sin marca') +
+          (typeof r.p === 'number' ? ' · ' + esc(fmtPrecio(r.p)) : '') + ' · ' + esc(fechaCorta(r.f)) + '</small></span></div>' +
+          '<button type="button" class="precio-btn con-dato" data-act="precio" data-prod="' + esc(k) + '" aria-label="Editar marca y precio de ' + esc(cap(k)) + '">' + ico('lapiz') + '</button></div>';
+      }).join('') + '</div>';
+    }
+    return pagina({ titulo: 'Mis marcas y precios', atras: '#/compras' }, h);
+  };
+
+  /* ------------------------------------------------------------ v8A: TEMPORIZADORES EN MODO COCINANDO */
+  /* duraciones del texto del paso: "18-22 minutos" (cuenta el valor bajo), "2 horas", "30 seg". Máximo 3, sin repetir. */
+  function tiemposDePaso(texto) {
+    var s = String(texto == null ? '' : texto), out = [], vistos = {}, re = /(\d+)(?:\s*(?:-|–|a)\s*(\d+))?\s*(min(?:utos?)?|h(?:oras?)?|seg(?:undos?)?)\b/gi, m;
+    while ((m = re.exec(s)) !== null && out.length < 3) {
+      if (/[\d.,]/.test(m.index > 0 ? s.charAt(m.index - 1) : '')) continue;   // decimales ("1,5 h") no cuentan
+      var c = m[3].toLowerCase().charAt(0), mult = c === 'm' ? 60 : (c === 'h' ? 3600 : 1);
+      var seg = parseInt(m[1], 10) * mult, abr = c === 'm' ? 'min' : (c === 'h' ? 'h' : 'seg');
+      if (!seg || seg > 12 * 3600 || vistos[seg]) continue;
+      vistos[seg] = 1;
+      out.push({ seg: seg, etq: (m[2] ? m[1] + '-' + m[2] : m[1]) + ' ' + abr });
+    }
+    return out;
+  }
+  function tmBotones(texto) {
+    var ts = tiemposDePaso(texto);
+    if (!ts.length) return '';
+    var h = '<div class="tm-wrap">' + ts.map(function (x) {
+      return '<button type="button" class="btn sec tm-b" data-act="tmr" data-seg="' + x.seg + '" data-etq="' + esc(x.etq) + '">⏱ ' + esc(x.etq) + '</button>';
+    }).join('') + '</div>';
+    if (!tmVisto()) h += '<p class="pie-c tm-aviso" id="tmAviso">Suena con la app abierta y la pantalla encendida.</p>';
+    return h;
+  }
+  function tmVisto() { try { return localStorage.getItem('cocina.tmv') === '1'; } catch (e) { return true; } }
+  function tmMarcarVisto() { try { localStorage.setItem('cocina.tmv', '1'); } catch (e) { /* ignorar */ } }
+  var TM_MAX = 5, tmIv = null, AC = null;
+  function audioListo() {
+    try {
+      if (!AC) { var C = window.AudioContext || window.webkitAudioContext; if (C) AC = new C(); }
+      if (AC && AC.state === 'suspended' && AC.resume) AC.resume();
+    } catch (e) { /* sin audio */ }
+  }
+  function pitido() {
+    try {
+      audioListo();
+      if (AC && AC.state !== 'suspended') {
+        var t0 = AC.currentTime;
+        [0, 0.35, 0.7].forEach(function (d) {
+          var o = AC.createOscillator(), g = AC.createGain();
+          o.type = 'sine'; o.frequency.value = 880; o.connect(g); g.connect(AC.destination);
+          g.gain.setValueAtTime(0.0001, t0 + d); g.gain.exponentialRampToValueAtTime(0.4, t0 + d + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t0 + d + 0.25);
+          o.start(t0 + d); o.stop(t0 + d + 0.3);
+        });
+      }
+    } catch (e) { /* sin audio */ }
+    try { if (navigator.vibrate) navigator.vibrate([300, 150, 300]); } catch (e) { /* sin vibración */ }
+  }
+  function fmtRestante(ms) {
+    var s = Math.max(0, Math.ceil(ms / 1000)), h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), x = s % 60;
+    var p2 = function (n) { return ('0' + n).slice(-2); };
+    return h ? h + ':' + p2(m) + ':' + p2(x) : p2(m) + ':' + p2(x);
+  }
+  function iniciarTimer(seg, etq) {
+    seg = parseInt(seg, 10);
+    if (!(seg > 0)) return;
+    audioListo();   // dentro del toque: el navegador permite el sonido
+    if (!S.timers) S.timers = [];
+    if (S.timers.length >= TM_MAX) { toast('Ya tienes ' + TM_MAX + ' temporizadores: quita uno'); return; }
+    S.timers.push({ id: 't' + Date.now() + Math.floor(Math.random() * 1000), fin: Date.now() + seg * 1000, etq: String(etq || (seg + ' s')), sonado: false });
+    guardar();
+    tmMarcarVisto(); var av = $('#tmAviso'); if (av) av.parentNode.removeChild(av);
+    pintarTimers();
+  }
+  function quitarTimer(id) {
+    S.timers = (S.timers || []).filter(function (t) { return t.id !== id; });
+    guardar(); pintarTimers();
+  }
+  function pintarTimers() {
+    var bar = $('#tmBar');
+    if (!bar) { bar = document.createElement('div'); bar.id = 'tmBar'; document.body.appendChild(bar); }
+    var L = S.timers || [];
+    bar.hidden = !L.length;
+    document.body.classList.toggle('hay-tm', L.length > 0);
+    bar.innerHTML = L.map(function (t) {
+      var rango = /-/.test(t.etq);
+      return '<div class="tm-it' + (t.sonado ? ' listo' : '') + '" data-tid="' + esc(t.id) + '"><span class="tm-t">' + (t.sonado ? '¡Listo!' : fmtRestante(t.fin - Date.now())) +
+        '</span><span class="tm-e">' + esc(t.etq) + (t.sonado && rango ? ' · revisa cómo va' : '') + '</span>' +
+        '<button type="button" class="tm-x" data-act="tmq" data-id="' + esc(t.id) + '" aria-label="Quitar temporizador">' + ico('cerrar') + '</button></div>';
+    }).join('');
+    ajustarTick();
+  }
+  function ajustarTick() {
+    var hay = (S.timers || []).length > 0;
+    if (hay && !tmIv) tmIv = setInterval(tickTimers, 1000);
+    else if (!hay && tmIv) { clearInterval(tmIv); tmIv = null; }
+  }
+  /* cuenta con fin - ahora (nunca acumulando ticks). Al terminar: pitido cada 10 s durante 60 s; queda hasta quitarlo. */
+  function tickTimers() {
+    var now = Date.now(), cambio = false;
+    (S.timers || []).forEach(function (t) {
+      if (t.fin > now) return;
+      if (!t.sonado) { t.sonado = true; t.ultimo = 0; cambio = true; }
+      if (now - t.fin <= 60000 && now - (t.ultimo || 0) >= 10000) { pitido(); t.ultimo = now; cambio = true; }
+    });
+    if (cambio) { guardar(); pintarTimers(); return; }
+    Array.prototype.forEach.call(document.querySelectorAll('#tmBar .tm-it:not(.listo)'), function (el) {
+      var id = el.getAttribute('data-tid'), t = (S.timers || []).filter(function (x) { return x.id === id; })[0];
+      var tt = el.querySelector('.tm-t'); if (t && tt) tt.textContent = fmtRestante(t.fin - now);
+    });
+    ajustarTick();
+  }
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) tickTimers(); });
 
   /* ------------------------------------------------------------ CONTROLES DE PERFIL */
   function ctlSeg(key, opts, val, etq) {
@@ -1086,7 +1419,7 @@
   function extraSes(e) {
     return { id: e.id, extra: true, nivel: e.nivel || 1, titulo: e.titulo, tiempo: e.tiempo, min: e.minutos, seccion: e.seccion,
       equipo: (e.equipo || []).map(function (id) { return { id: id }; }), tags: e.tags || {}, ingPlano: e.ingPlano || '',
-      recetas: [e], bebe: e.bebe, errores: [], salioBien: [] };
+      recetas: [e], bebe: e.bebe, errores: e.errores || [], salioBien: [] };
   }
   function armarRecs() {
     RECS = [];
@@ -1253,7 +1586,7 @@
   rutas.recetas = function () {
     REC.m = null; REC.pag = 0; REC.po = 0;
     var l = listaRecHtml(), h = '<div id="recRecom">' + recomHtml() + '</div>';
-    h = '<div class="grupo"><a class="fila" href="#/planificador"><span class="fila-t"><strong>Menú de la semana</strong><small>' + (planVigente() ? planResumen() + ' · ver o cambiar' : 'Elige tus comidas y arma la lista de compras sumada') + '</small></span>' + ico('sig', 'sig') + '</a></div>' + h;
+    h = '<div class="grupo">' + (hayResc() ? '<a class="fila" href="#/rescates"><span class="fila-t"><strong>Si algo sale mal</strong><small>Se pasó de sal, se pegó el arroz…</small></span>' + ico('sig', 'sig') + '</a>' : '') + '<a class="fila" href="#/planificador"><span class="fila-t"><strong>Menú de la semana</strong><small>' + (planVigente() ? planResumen() + ' · ver o cambiar' : 'Elige tus comidas y arma la lista de compras sumada') + '</small></span>' + ico('sig', 'sig') + '</a></div>' + h;
     h += '<div class="buscar"><label class="ctl-e" for="recQ">Buscar por ingrediente o nombre</label><input id="recQ" class="txt" type="search" inputmode="search" enterkeyhint="search" autocomplete="off" placeholder="Ej.: huevo, pollo, papa" value="' + esc(RF.q) + '" data-rf="q"></div>';
     h += '<div id="recFiltros">' + filtrosHtml() + '</div>';
     h += '<p class="pie" id="recCuenta" role="status" aria-live="polite">' + esc(l.cuenta) + '</p><div id="recLista">' + l.html + '</div>';
@@ -1444,7 +1777,7 @@
   var deferredInstall = null, msgAjustes = '';
   var ESC_NOM = { 90: 'pequeña', 100: 'normal', 115: 'grande', 130: 'muy grande' };
   var TEMA_NOM = { auto: 'Automático', claro: 'Claro', oscuro: 'Oscuro' };
-  var VERSION_APP = '2.11';
+  var VERSION_APP = '2.12';
   function pl(n, a, b) { return n + ' ' + (n === 1 ? a : b); }
   function paisNom(c) { return (PAISES.filter(function (x) { return x[0] === c; })[0] || ['', ''])[1]; }
   function ajVal(k) {
@@ -1644,6 +1977,14 @@
         guardar(); render(); break;
       case 'ckprev': CK.i = Math.max(0, CK.i - 1); render(); break;
       case 'cknext': CK.i += 1; render(); break;
+      case 'reempl': abrirReempl(t.getAttribute('data-rid')); break;
+      case 'reempl-cerrar': cerrarReempl(); break;
+      case 'precio': abrirPrecio(t.getAttribute('data-prod')); break;
+      case 'precio-guardar': guardarPrecio(t.getAttribute('data-prod')); break;
+      case 'precio-cancelar': cerrarPrecio(); break;
+      case 'precio-borrar': borrarPrecio(t.getAttribute('data-prod'), parseInt(t.getAttribute('data-i'), 10)); break;
+      case 'tmr': iniciarTimer(t.getAttribute('data-seg'), t.getAttribute('data-etq')); break;
+      case 'tmq': quitarTimer(t.getAttribute('data-id')); break;
       case 'exportar':
         var obj = { app: 'cocina-curso', v: 1, exportado: new Date().toISOString(), datos: S };
         msgAjustes = descargar('cocina-progreso-' + hoyISO() + '.json', JSON.stringify(obj, null, 1)) ? 'Archivo descargado.' : 'No se pudo descargar en este navegador.';
@@ -1693,6 +2034,7 @@
     var t = ev.target;
     if (t.matches && t.matches('input[data-text]')) { var p = objetivoP(); p[t.getAttribute('data-text')] = t.value; guardar(); }
     else if (t.matches && t.matches('input[data-rf]')) { RF[t.getAttribute('data-rf')] = t.value; refrescarLista(); }
+    else if (t.matches && t.matches('input[data-resc]')) { RESC.q = t.value; var rr = $('#rescRes'); if (rr) rr.innerHTML = rescHtml(); }
   });
   /* deslizar en modo cocinando */
   var tx0 = null;
@@ -1716,6 +2058,7 @@
   function arrancar() {
     vista = $('#vista'); tabbar = $('#tabbar');
     aplicarTema();
+    pintarTimers();
     if (window.matchMedia) { try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', aplicarTema); } catch (e) { /* ignorar */ } }
     var pSin = fetch('data/sinonimos.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; });
     fetch('data/curso.json').then(function (r) { return r.json(); }).then(function (d) {
@@ -1735,5 +2078,5 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', arrancar); else arrancar();
 
   /* exposición mínima para pruebas manuales */
-  window.__cocina = { setHora: function (h) { HORA_SIM = h; render(); }, RECS: function () { return RECS; }, nivelUsuario: nivelUsuario, fmtParte: fmtParte, factor: factor, S: function () { return S; }, bebeT: bebeT, listaCompras: listaCompras, partes: partes, sn: sn, convTxt: convTxt, inline: inline, D: function () { return D; }, REG: function () { return REG; } };
+  window.__cocina = { setHora: function (h) { HORA_SIM = h; render(); }, RECS: function () { return RECS; }, nivelUsuario: nivelUsuario, fmtParte: fmtParte, factor: factor, S: function () { return S; }, bebeT: bebeT, listaCompras: listaCompras, partes: partes, sn: sn, convTxt: convTxt, inline: inline, D: function () { return D; }, REG: function () { return REG; }, tiemposDePaso: tiemposDePaso, tmIniciar: iniciarTimer, tmTimers: function () { return S.timers; } };
 })();
