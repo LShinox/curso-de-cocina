@@ -1444,7 +1444,7 @@
   var deferredInstall = null, msgAjustes = '';
   var ESC_NOM = { 90: 'pequeña', 100: 'normal', 115: 'grande', 130: 'muy grande' };
   var TEMA_NOM = { auto: 'Automático', claro: 'Claro', oscuro: 'Oscuro' };
-  var VERSION_APP = '2.9';
+  var VERSION_APP = '2.11';
   function pl(n, a, b) { return n + ' ' + (n === 1 ? a : b); }
   function paisNom(c) { return (PAISES.filter(function (x) { return x[0] === c; })[0] || ['', ''])[1]; }
   function ajVal(k) {
