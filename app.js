@@ -66,6 +66,15 @@
   }
   /* ------------------------------------------------------------ v2.8: país, altura y medidas */
   var PAISES = [['EC', 'Ecuador'], ['CO', 'Colombia'], ['PE', 'Perú'], ['MX', 'México'], ['VE', 'Venezuela'], ['CL', 'Chile'], ['AR', 'Argentina'], ['UY', 'Uruguay'], ['BO', 'Bolivia'], ['ES', 'España'], ['US', 'Estados Unidos'], ['OT', 'Otro']];
+  /* v2.9: país de origen de cada receta (campo `origen`; INT = genérica). Sin campo: 'ecuador' en etiquetas = EC, el resto INT. */
+  var ORIG = { EC: 'Ecuador', VE: 'Venezuela', CO: 'Colombia', PE: 'Perú', MX: 'México', AR: 'Argentina', CL: 'Chile', UY: 'Uruguay', BO: 'Bolivia', BR: 'Brasil', PY: 'Paraguay', ES: 'España', IT: 'Italia', FR: 'Francia', DE: 'Alemania', GR: 'Grecia', TR: 'Turquía', LB: 'Líbano', IL: 'Israel', MA: 'Marruecos', CN: 'China', JP: 'Japón', KR: 'Corea', TH: 'Tailandia', IN: 'India', US: 'Estados Unidos' };
+  function origenDe(r) { return r.origen || ((r.etiquetas || []).indexOf('ecuador') >= 0 ? 'EC' : 'INT'); }
+  function origNom(c) { return ORIG[c] || c; }
+  function esDeFuera(r) { var o = origenDe(r); return o !== 'INT' && o !== P().pais; }
+  function chipOrigen(r) {
+    var o = origenDe(r); if (o === 'INT') return '';
+    return '<span class="chip ' + (o === P().pais ? 'chip-ec' : 'chip-or') + '">' + esc(origNom(o)) + '</span>';
+  }
   var SYN_DATA = {}, SYN_ALL = [], SYN_CC = null, SYN_RE = null, SYN_MAP = {}, ALT_CAN = {};
   function escRe(x) { return x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
   function plW(w) {
@@ -788,7 +797,7 @@
     else if (s.ilus) h += '<section class="bloque">' + ilusHtml(s.ilus) + '</section>';
     (s.extras || []).forEach(function (e) { h += '<section class="bloque"><h2>' + md(e.titulo) + '</h2>' + bloques(e.bloques) + '</section>'; });
     s.recetas.forEach(function (r, ri) {
-      h += '<section class="bloque receta" id="rec-' + ri + '"><h2>Receta' + (r.etiqueta ? ' ' + r.etiqueta : '') + ': ' + md(cap(r.titulo)) + '</h2>' + ((r.etiquetas || []).indexOf('ecuador') >= 0 ? '<p class="chips"><span class="chip chip-ec">Cocina de Ecuador</span></p>' : '');
+      h += '<section class="bloque receta" id="rec-' + ri + '"><h2>Receta' + (r.etiqueta ? ' ' + r.etiqueta : '') + ': ' + md(cap(r.titulo)) + '</h2>' + (origenDe(r) !== 'INT' ? '<p class="chips">' + chipOrigen(r) + '</p>' : '');
       if (r.rinde) h += '<p class="rinde">Receta base: ' + md(r.rinde) + '.</p>';
       h += bloques(r.intro);
       h += '<h3 class="h3">Ingredientes</h3>' + ingredientesHtml(r, f);
@@ -1063,8 +1072,8 @@
   var MOM_NOM = { desayuno: 'Desayuno', almuerzo: 'Almuerzo', merienda: 'Merienda', cena: 'Cena', postre: 'Postre', bebida: 'Bebida' };
   var MOM_ART = { desayuno: 'el desayuno', almuerzo: 'el almuerzo', merienda: 'la merienda', cena: 'la cena', postre: 'el postre', bebida: 'tomar algo' };
   var RECS = [];
-  var RF = { cocina: 'todos', momento: 'todos', tiempo: 'todos', nivel: 'todos', q: '', eq: true, perfil: true, mas: false };   // filtros del recetario
-  var REC = { m: null, pag: 0 };                                                                            // recomendador
+  var RF = { pais: 'todos', momento: 'todos', tiempo: 'todos', nivel: 'todos', q: '', eq: true, perfil: true, mas: false };   // filtros del recetario
+  var REC = { m: null, pag: 0, po: 0 };                                                                            // recomendador
   var HORA_SIM = null;
   function horaActual() { return HORA_SIM !== null ? HORA_SIM : new Date().getHours(); }
   function momentoAhora() {
@@ -1141,6 +1150,24 @@
       }).join('') + '</div>';
       h += n > 3 ? '<div class="btns"><button class="btn sec" data-act="rec-otra">Otra opción</button></div>' : '<p class="pie-c">Solo hay ' + n + (n === 1 ? ' opción' : ' opciones') + ' para este momento con tu perfil.</p>';
     }
+    return h + '</section>' + otroPaisHtml(m);
+  }
+  /* "Prueba algo de otro país": una receta del momento cuyo origen no es el país del perfil (ni genérica); los países se alternan */
+  function rankingOtro(m) {
+    var base = RECS.filter(function (x) { return x.r.tipo === 'plato' && x.r.momento.indexOf(m) >= 0 && esDeFuera(x.r) && compatRec(x).length === 0; })
+      .map(function (x) { return { x: x, sc: (S.cocinadas[x.id] ? 0 : 1) + jitter(x.id) }; }).sort(function (a, b) { return b.sc - a.sc; });
+    var por = {}, orden = [], out = [], i = 0, hay = true;
+    base.forEach(function (z) { var o = origenDe(z.x.r); if (!por[o]) { por[o] = []; orden.push(o); } por[o].push(z.x); });
+    while (hay) { hay = false; orden.forEach(function (o) { if (por[o][i]) { out.push(por[o][i]); hay = true; } }); i++; }
+    return out;
+  }
+  function otroPaisHtml(m) {
+    if (!RECS.some(function (x) { return esDeFuera(x.r); })) return '';
+    var lista = rankingOtro(m), n = lista.length, h = '<section class="tarjeta recom otro"><p class="etq">Prueba algo de otro país</p><h2>Un plato para variar</h2>';
+    if (!n) return h + '<p class="pie-c">Para ' + MOM_ART[m] + ' todavía no hay platos de otros países que encajen con tu equipo y tu perfil. Prueba otro momento.</p></section>';
+    var x = lista[REC.po % n];
+    h += '<div class="grupo"><a class="fila" href="' + hrefRec(x) + '"><span class="fila-t"><strong>' + md(cap(x.r.titulo)) + '</strong><small>~' + x.r.minutos + ' min · ' + etqSes(x.s) + '</small><small class="razon">Cocina de ' + esc(origNom(origenDe(x.r))) + '</small></span>' + ico('sig', 'sig') + '</a></div>';
+    h += n > 1 ? '<div class="btns"><button class="btn sec" data-act="rec-otro">Otra opción</button></div>' : '';
     return h + '</section>';
   }
   function buscaTok(plano, w) {
@@ -1155,7 +1182,12 @@
       if (RF.momento === 'bebe') { if (r.momento.indexOf('bebe') < 0) return; }
       else if (RF.momento === 'base') { if (r.tipo !== 'base') return; }
       else if (RF.momento !== 'todos' && r.momento.indexOf(RF.momento) < 0) return;
-      if (RF.cocina === 'ecuador' && (r.etiquetas || []).indexOf('ecuador') < 0) return;
+      if (RF.pais !== 'todos') {
+        var og = origenDe(r), mp = P().pais;
+        if (RF.pais === 'mi') { if (og !== mp) return; }
+        else if (RF.pais === 'otros') { if (og === 'INT' || og === mp) return; }
+        else if (og !== RF.pais) return;
+      }
       if (RF.tiempo === '20' && r.minutos > 20) return;
       if (RF.tiempo === '45' && r.minutos > 45) return;
       if (RF.tiempo === 'mas' && r.minutos <= 45) return;
@@ -1174,7 +1206,7 @@
     var ch = '';
     z.mot.forEach(function (m) { ch += '<span class="chip chip-' + (m.k === 'equipo' ? 'eq' : m.k) + '">' + (m.k === 'alergia' ? 'Atención: ' : (m.k === 'gusto' ? 'Aviso: ' : '')) + esc(m.t) + '</span>'; });
     if (z.nivelAlto) ch += '<span class="chip chip-t">Más técnica: ' + esc(nivelNom(s.nivel)) + '</span>';
-    if ((r.etiquetas || []).indexOf('ecuador') >= 0) ch += '<span class="chip chip-ec">Cocina de Ecuador</span>';
+    ch += chipOrigen(r);
     if (P().bebe && r.momento.indexOf('bebe') >= 0) ch += '<span class="chip chip-ok">Con porción para el bebé</span>';
     return '<a class="fila" href="' + hrefRec(x) + '"><span class="fila-t"><strong>' + md(cap(r.titulo)) + '</strong>' +
       '<small>~' + r.minutos + ' min · ' + (r.tipo === 'base' ? 'Salsa o base' : esc(cap(mom))) + '</small>' +
@@ -1193,10 +1225,21 @@
     var on = RF[k] === v;
     return '<button type="button" class="cs' + (on ? ' on' : '') + '" aria-pressed="' + on + '" data-act="rf" data-k="' + k + '" data-v="' + v + '">' + (on ? '✓ ' : '') + txt + '</button>';
   }
+  /* filtro País: atajos "De mi país" / "De otros países"; los países concretos aparecen al elegir "De otros países" (o uno concreto) */
+  function paisFiltroHtml() {
+    var cu = {}, mp = P().pais;
+    RECS.forEach(function (x) { var o = origenDe(x.r); if (o !== 'INT') cu[o] = (cu[o] || 0) + 1; });
+    var h = '<div class="ctl"><span class="ctl-e">País</span><div class="chipsel">' + chipRf('pais', 'todos', 'Todos') + (mp !== 'OT' ? chipRf('pais', 'mi', 'De mi país') : '') + chipRf('pais', 'otros', 'De otros países') + '</div>';
+    if (RF.pais === 'otros' || (RF.pais !== 'todos' && RF.pais !== 'mi')) {
+      var cods = Object.keys(cu).filter(function (c) { return c !== mp || RF.pais === c; }).sort(function (a, b) { return cu[b] - cu[a] || origNom(a).localeCompare(origNom(b)); });
+      h += '<div class="chipsel sub-chips" role="group" aria-label="Elegir un país">' + cods.map(function (c) { return chipRf('pais', c, esc(origNom(c)) + ' · ' + cu[c]); }).join('') + '</div>';
+    }
+    return h + '</div>';
+  }
   function filtrosHtml() {
     var h = '<div class="grupo form"><div class="ctl"><span class="ctl-e">Momento</span><div class="chipsel">' +
       chipRf('momento', 'todos', 'Todos') + MOMS.map(function (o) { return chipRf('momento', o[0], o[1]); }).join('') + chipRf('momento', 'bebe', 'Para el bebé') + chipRf('momento', 'base', 'Salsas y bases') + '</div></div>' +
-      '<div class="ctl"><span class="ctl-e">Cocina</span><div class="chipsel">' + chipRf('cocina', 'todos', 'Todas') + chipRf('cocina', 'ecuador', 'Cocina de Ecuador') + '</div></div></div>';
+      paisFiltroHtml() + '</div>';
     var activos = (RF.tiempo !== 'todos' ? 1 : 0) + (RF.nivel !== 'todos' ? 1 : 0) + (RF.eq ? 0 : 1) + (RF.perfil ? 0 : 1);
     h += '<details class="desp" id="recMas"' + (RF.mas ? ' open' : '') + '><summary><span>Más filtros' + (activos ? ' · ' + activos + ' cambiado' + (activos > 1 ? 's' : '') : '') + '</span>' + ico('sig', 'flecha') + '</summary><div class="desp-c">' +
       '<div class="ctl"><span class="ctl-e">Tiempo</span><div class="chipsel">' + chipRf('tiempo', 'todos', 'Cualquiera') + chipRf('tiempo', '20', 'Hasta 20 min') + chipRf('tiempo', '45', 'Hasta 45 min') + chipRf('tiempo', 'mas', 'Más de 45 min') + '</div></div>' +
@@ -1208,7 +1251,7 @@
     return h;
   }
   rutas.recetas = function () {
-    REC.m = null; REC.pag = 0;
+    REC.m = null; REC.pag = 0; REC.po = 0;
     var l = listaRecHtml(), h = '<div id="recRecom">' + recomHtml() + '</div>';
     h = '<div class="grupo"><a class="fila" href="#/planificador"><span class="fila-t"><strong>Menú de la semana</strong><small>' + (planVigente() ? planResumen() + ' · ver o cambiar' : 'Elige tus comidas y arma la lista de compras sumada') + '</small></span>' + ico('sig', 'sig') + '</a></div>' + h;
     h += '<div class="buscar"><label class="ctl-e" for="recQ">Buscar por ingrediente o nombre</label><input id="recQ" class="txt" type="search" inputmode="search" enterkeyhint="search" autocomplete="off" placeholder="Ej.: huevo, pollo, papa" value="' + esc(RF.q) + '" data-rf="q"></div>';
@@ -1397,27 +1440,84 @@
     return pagina({ titulo: 'Tu logro', sub: esc(nivelNom(nv)), atras: '#/hoy' }, h);
   };
 
-  /* ------------------------------------------------------------ AJUSTES */
+  /* ------------------------------------------------------------ AJUSTES · lista corta + subpantallas (v2.9) */
   var deferredInstall = null, msgAjustes = '';
-  rutas.ajustes = function () {
-    var p = S.perfil, h = '';
-    h += '<h2 class="gh">Perfil</h2><div id="formPerfil">' + formAjustes(p) + '</div>';
-    h += '<h2 class="gh">Apariencia</h2><div class="grupo form">' + ctlSeg('tema', [['auto', 'Automático'], ['claro', 'Claro'], ['oscuro', 'Oscuro']], S.tema, 'Tema') +
-      ctlSeg('escala', [[90, 'A−'], [100, 'A'], [115, 'A+'], [130, 'A++']], S.escala, 'Tamaño de letra') + '</div>';
-    h += '<h2 class="gh">Tu progreso</h2><div class="grupo form"><div class="fila est"><span class="fila-t"><strong>' + nHechas() + ' de ' + REG.length + ' sesiones hechas</strong><small>' + Object.keys(S.omitidas).length + ' omitidas</small></span></div>' +
-      '<button class="fila btn-fila" data-act="exportar"><span class="fila-t"><strong>Exportar progreso</strong><small>Descarga un archivo .json con tu perfil y progreso</small></span></button>' +
-      '<label class="fila btn-fila"><span class="fila-t"><strong>Importar progreso</strong><small>Carga un archivo .json exportado antes</small></span><input type="file" id="fileImp" accept="application/json,.json" class="oculto"></label></div>';
-    if (msgAjustes) h += '<p class="msg" role="status">' + esc(msgAjustes) + '</p>';
-    h += '<h2 class="gh">Reiniciar</h2><div class="grupo form"><div id="zonaReset"><button class="fila btn-fila peligro" data-act="reset-ask" data-v="progreso"><span class="fila-t"><strong>Borrar solo el progreso</strong><small>Sesiones hechas, omitidas y listas de compras</small></span></button>' +
-      '<button class="fila btn-fila peligro" data-act="reset-ask" data-v="todo"><span class="fila-t"><strong>Borrar todo y volver al cuestionario</strong><small>Perfil y progreso</small></span></button></div></div>';
-    h += '<h2 class="gh">Esta app</h2><div class="grupo form">' +
-      '<div class="fila est"><span class="fila-t"><strong>Uso sin internet</strong><small id="swEstado">Comprobando…</small></span></div>' +
-      (deferredInstall ? '<button class="fila btn-fila" data-act="instalar"><span class="fila-t"><strong>Instalar en el teléfono</strong><small>Añade la app a la pantalla de inicio</small></span></button>' : '<div class="fila est"><span class="fila-t"><strong>Instalar</strong><small>En Android (Chrome o Samsung Internet): menú ⋮ → "Instalar app" o "Añadir a la pantalla de inicio". En iPhone: Compartir → "Añadir a pantalla de inicio".</small></span></div>') +
-      '<div class="fila est"><span class="fila-t"><strong>Privacidad</strong><small>Sin cuentas, sin rastreo y sin llamadas a internet. Tus datos viven solo en este dispositivo.</small></span></div>' +
-      '<div class="fila est"><span class="fila-t"><strong>Aviso</strong><small>Curso informativo de cocina casera. No reemplaza el consejo del pediatra ni del médico.</small></span></div>' +
-      '<a class="fila" href="#/creditos"><span class="fila-t"><strong>Créditos</strong><small>Fotos de platos, ilustraciones y licencias</small></span>' + ico('sig', 'sig') + '</a>' +
-      '<div class="fila est"><span class="fila-t"><strong>Versión</strong><small>2.8 · ' + REG.length + ' sesiones en 3 niveles + Semana 0, con ' + RECS.length + ' recetas (' + EXT.length + ' extras), menú semanal, ilustraciones y fotos</small></span></div></div>';
+  var ESC_NOM = { 90: 'pequeña', 100: 'normal', 115: 'grande', 130: 'muy grande' };
+  var TEMA_NOM = { auto: 'Automático', claro: 'Claro', oscuro: 'Oscuro' };
+  var VERSION_APP = '2.9';
+  function pl(n, a, b) { return n + ' ' + (n === 1 ? a : b); }
+  function paisNom(c) { return (PAISES.filter(function (x) { return x[0] === c; })[0] || ['', ''])[1]; }
+  function ajVal(k) {
+    var p = S.perfil, t;
+    switch (k) {
+      case 'equipo': return { gas: 'A gas', electrica: 'Eléctrica', induccion: 'Inducción' }[p.fuego] + ' · horno ' + { electrico: 'eléctrico', gas: 'a gas', no: 'no' }[p.horno] + ' · ' + ([p.licuadora ? 'licuadora' : '', p.olla ? 'olla' : '', p.microondas ? 'microondas' : '', p.airfryer ? 'air fryer' : ''].filter(Boolean).join(', ') || 'sin aparatos');
+      case 'cocina': return pl(p.adultos, 'adulto', 'adultos') + (p.ninos ? ' · ' + pl(p.ninos, 'niño', 'niños') : '') + (p.bebe ? ' · bebé ' + p.bebeMeses + ' meses' : '');
+      case 'lugar': return paisNom(p.pais) + ' · ' + (p.altura ? 'en altura' : 'sin altura') + ' · ' + (p.medidas === 'us' ? 'medidas de EE. UU.' : 'medidas métricas');
+      case 'plan': t = NIVELES.filter(function (n) { return n[0] === p.nivel; })[0]; return ({ cero: 'Desde cero', basico: 'Básico', defiendo: 'Me defiendo', intermedio: 'Intermedio' }[p.nivel] || (t ? t[1] : '')) + ' · ' + p.sesiones + ' por semana · ' + p.minutos + ' min';
+      case 'gustos':
+        var g = (!p.gustos.length || p.gustos.indexOf('todo') >= 0) ? 'De todo' : p.gustos.map(function (x) { return (GUSTOS.filter(function (y) { return y[0] === x; })[0] || ['', x])[1]; }).join(', ');
+        var al = p.alergias.map(function (a) { return ALER_NOM[a]; }).concat(p.alergiaTxt ? [p.alergiaTxt] : []);
+        return g + ' · ' + (al.length ? 'alergia: ' + al.join(', ').toLowerCase() : 'sin alergias');
+      case 'apariencia': return (TEMA_NOM[S.tema] || 'Automático') + ' · letra ' + (ESC_NOM[S.escala] || 'normal');
+      case 'datos': return nHechas() + ' de ' + REG.length + ' sesiones hechas';
+      case 'acerca': return 'Versión ' + VERSION_APP;
+    }
+    return '';
+  }
+  function filaAj(k, tit) {
+    return '<a class="fila" href="#/ajustes/' + k + '"><span class="fila-t"><strong>' + tit + '</strong><small class="val">' + esc(ajVal(k)) + '</small></span>' + ico('sig', 'sig') + '</a>';
+  }
+  /* subpantallas que editan el perfil: cada una es un formulario corto */
+  var AJ = {
+    cocina: { t: 'Para quién cocino', f: function (p) { return formPersonas(p); } },
+    equipo: { t: 'Mi equipo', f: function (p) { return formEquipo(p); } },
+    lugar: { t: 'Dónde cocino', f: function (p) { return formLugar(p); } },
+    plan: { t: 'Mi plan', f: function (p) { return '<h2 class="gh">Tu nivel</h2>' + formNivel(p) + '<h2 class="gh">Tu ritmo</h2>' + formTiempo(p); } },
+    gustos: { t: 'Gustos y alergias', f: function (p) { return formGustos(p); } }
+  };
+  function formAjustes(p) { var a = AJ[ruta()[1]]; return a ? a.f(p) : ''; }
+  rutas.ajustes = function (seg) {
+    var sub = seg[1], p = S.perfil, h = '', msg = msgAjustes; msgAjustes = '';
+    if (sub && AJ[sub]) return pagina({ titulo: AJ[sub].t, atras: '#/ajustes' }, '<div id="formPerfil">' + AJ[sub].f(p) + '</div>');
+    if (sub === 'apariencia') {
+      h += '<div class="grupo form">' + ctlSeg('tema', [['auto', 'Automático'], ['claro', 'Claro'], ['oscuro', 'Oscuro']], S.tema, 'Tema') +
+        ctlSeg('escala', [[90, 'A−'], [100, 'A'], [115, 'A+'], [130, 'A++']], S.escala, 'Tamaño de letra') + '</div>';
+      return pagina({ titulo: 'Apariencia', atras: '#/ajustes' }, h);
+    }
+    if (sub === 'datos') {
+      if (msg) h += '<p class="msg" role="status">' + esc(msg) + '</p>';
+      h += '<div class="grupo"><div class="fila est"><span class="fila-t"><strong>' + nHechas() + ' de ' + REG.length + ' sesiones hechas</strong><small>' + Object.keys(S.omitidas).length + ' omitidas</small></span></div>' +
+        '<button class="fila btn-fila" data-act="exportar"><span class="fila-t"><strong>Exportar progreso</strong><small>Descarga un archivo .json con tu perfil y progreso</small></span></button>' +
+        '<label class="fila btn-fila"><span class="fila-t"><strong>Importar progreso</strong><small>Carga un archivo .json exportado antes</small></span><input type="file" id="fileImp" accept="application/json,.json" class="oculto"></label></div>';
+      h += '<h2 class="gh sep">Borrar</h2><div class="grupo"><div id="zonaReset"><button class="fila peligro" data-act="reset-ask" data-v="progreso"><span class="fila-t"><strong>Borrar solo el progreso</strong><small>Sesiones hechas, omitidas y listas de compras</small></span></button>' +
+        '<button class="fila btn-fila peligro" data-act="reset-ask" data-v="todo"><span class="fila-t"><strong>Borrar todo y volver al cuestionario</strong><small>Perfil y progreso</small></span></button></div></div>' +
+        '<p class="pie">Pide confirmación antes de borrar. Exporta antes si quieres guardar una copia.</p>';
+      return pagina({ titulo: 'Mis datos', atras: '#/ajustes' }, h);
+    }
+    if (sub === 'acerca') {
+      h += '<div class="grupo">' +
+        '<div class="fila est"><span class="fila-t"><strong>Uso sin internet</strong><small id="swEstado">Comprobando…</small></span></div>' +
+        (deferredInstall ? '<button class="fila btn-fila" data-act="instalar"><span class="fila-t"><strong>Instalar en el teléfono</strong><small>Añade la app a la pantalla de inicio</small></span></button>' : '<div class="fila est"><span class="fila-t"><strong>Instalar</strong><small>En Android (Chrome o Samsung Internet): menú ⋮ → "Instalar app" o "Añadir a la pantalla de inicio". En iPhone: Compartir → "Añadir a pantalla de inicio".</small></span></div>') +
+        '<a class="fila" href="#/creditos"><span class="fila-t"><strong>Créditos</strong><small>Fotos de platos, ilustraciones y licencias</small></span>' + ico('sig', 'sig') + '</a></div>';
+      h += '<div class="grupo"><div class="fila est"><span class="fila-t"><strong>Privacidad</strong><small>Sin cuentas, sin rastreo y sin llamadas a internet. Tus datos viven solo en este dispositivo.</small></span></div>' +
+        '<div class="fila est"><span class="fila-t"><strong>Aviso</strong><small>Curso informativo de cocina casera. No reemplaza el consejo del pediatra ni del médico.</small></span></div>' +
+        '<div class="fila est"><span class="fila-t"><strong>Versión ' + VERSION_APP + '</strong><small>' + REG.length + ' sesiones en 3 niveles + Semana 0, con ' + RECS.length + ' recetas (' + EXT.length + ' extras), menú semanal, ilustraciones y fotos</small></span></div></div>';
+      return pagina({ titulo: 'Acerca de', atras: '#/ajustes' }, h);
+    }
+    /* pantalla principal: solo filas con su valor actual */
+    h += '<div class="grupo">' + filaAj('cocina', 'Para quién cocino') + filaAj('equipo', 'Mi equipo') + filaAj('lugar', 'Dónde cocino') + filaAj('plan', 'Mi plan') + filaAj('gustos', 'Gustos y alergias') + '</div>';
+    h += '<div class="grupo">' + filaAj('apariencia', 'Apariencia') + '</div>';
+    h += '<div class="grupo">' + filaAj('datos', 'Mis datos') + filaAj('acerca', 'Acerca de') + '</div>';
     return pagina({ titulo: 'Ajustes' }, h);
+  };
+  rutas.ajustes.post = function (seg) {
+    if (seg[1] !== 'acerca') return;
+    var el = $('#swEstado'); if (!el) return;
+    if (!('serviceWorker' in navigator)) { el.textContent = 'Este navegador no admite service worker: la app necesita abrirse con conexión.'; return; }
+    if (!/^https?:$/.test(location.protocol)) { el.textContent = 'No disponible al abrir el archivo directamente; se activa desde un servidor (local o GitHub Pages).'; return; }
+    navigator.serviceWorker.getRegistration().then(function (r) {
+      el.textContent = r && r.active ? 'Activo: todo el curso queda guardado en el dispositivo.' : 'Preparándose: abre la app una vez con conexión.';
+    }, function () { el.textContent = 'No se pudo comprobar.'; });
   };
 
   /* ------------------------------------------------------------ CRÉDITOS */
@@ -1432,25 +1532,8 @@
     h += '<h2 class="gh">Ilustraciones y letra</h2><div class="grupo form"><div class="fila est"><span class="fila-t"><strong>Ilustraciones de técnicas</strong><small>Dibujadas con código para esta app (cortes, agarre del cuchillo, punto del huevo, arroz, olla de presión, temperaturas y tablas). Sin licencia de terceros.</small></span></div>' +
       '<div class="fila est"><span class="fila-t"><strong>Íconos</strong><small>Íconos propios de trazo simple; no se usa ningún paquete externo.</small></span></div>' +
       '<div class="fila est"><span class="fila-t"><strong>Letra</strong><small>La del sistema de tu teléfono; no se descarga ninguna.</small></span></div></div>';
-    return pagina({ titulo: 'Créditos', atras: '#/ajustes' }, h);
+    return pagina({ titulo: 'Créditos', atras: '#/ajustes/acerca' }, h);
   };
-  rutas.ajustes.post = function () {
-    var el = $('#swEstado'); if (!el) return;
-    if (!('serviceWorker' in navigator)) { el.textContent = 'Este navegador no admite service worker: la app necesita abrirse con conexión.'; return; }
-    if (!/^https?:$/.test(location.protocol)) { el.textContent = 'No disponible al abrir el archivo directamente; se activa desde un servidor (local o GitHub Pages).'; return; }
-    navigator.serviceWorker.getRegistration().then(function (r) {
-      el.textContent = r && r.active ? 'Activo: todo el curso queda guardado en el dispositivo.' : 'Preparándose: abre la app una vez con conexión.';
-    }, function () { el.textContent = 'No se pudo comprobar.'; });
-  };
-  function formAjustes(p) {
-    return '<div class="grupo form"><p class="g-t">Nivel</p>' + formNivel(p).replace('class="grupo"', 'class="interno"') + '</div>' +
-      '<div class="grupo form"><p class="g-t">Personas</p>' + formPersonas(p).replace(/<div class="grupo form">/g, '<div class="interno">').replace(/<p class="pie">[^<]*<\/p>/g, '') + '</div>' +
-      '<div class="grupo form"><p class="g-t">Equipo</p>' + formEquipo(p).replace(/<div class="grupo form">/g, '<div class="interno">') + '</div>' +
-      '<div class="grupo form"><p class="g-t">País y medidas</p>' + formLugar(p).replace(/<div class="grupo form">/g, '<div class="interno">').replace(/<p class="pie">[^<]*<\/p>/g, '') + '</div>' +
-      '<div class="grupo form"><p class="g-t">Tiempo</p>' + formTiempo(p).replace(/<div class="grupo form">/g, '<div class="interno">').replace(/<p class="pie">[^<]*<\/p>/g, '') + '</div>' +
-      '<div class="grupo form"><p class="g-t">Gustos y alergias</p>' + formGustos(p).replace(/<div class="grupo form">/g, '<div class="interno">').replace(/<p class="pie">[^<]*<\/p>/g, '') + '</div>';
-  }
-
   /* ------------------------------------------------------------ acciones */
   function aplicarTema() {
     document.documentElement.setAttribute('data-tema', S.tema || 'auto');
@@ -1551,8 +1634,9 @@
         guardar(); render(); break;
       case 'rf': RF[k] = v; refrescarRec(); refocus('rf', k, v); break;
       case 'rf-tog': RF[k] = !RF[k]; refrescarRec(); refocus('rf-tog', k); break;
-      case 'rf-clear': RF.cocina = 'todos'; RF.momento = 'todos'; RF.tiempo = 'todos'; RF.nivel = 'todos'; RF.q = ''; var qi = $('#recQ'); if (qi) qi.value = ''; refrescarRec(); break;
-      case 'rec-mom': REC.m = v; REC.pag = 0; refrescarRecom(); refocus('rec-mom', null, v); break;
+      case 'rf-clear': RF.pais = 'todos'; RF.momento = 'todos'; RF.tiempo = 'todos'; RF.nivel = 'todos'; RF.q = ''; var qi = $('#recQ'); if (qi) qi.value = ''; refrescarRec(); break;
+      case 'rec-mom': REC.m = v; REC.pag = 0; REC.po = 0; refrescarRecom(); refocus('rec-mom', null, v); break;
+      case 'rec-otro': REC.po += 1; refrescarRecom(); refocus('rec-otro'); break;
       case 'rec-otra': REC.pag += 1; refrescarRecom(); refocus('rec-otra'); break;
       case 'chk': break; // lo maneja change
       case 'desmarcar':

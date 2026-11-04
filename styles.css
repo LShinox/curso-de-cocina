@@ -337,3 +337,10 @@ details.mini summary { min-height: 2.75rem; display: flex; align-items: center; 
 .desp-c .ctl { padding-left: 0; padding-right: 0; }
 /* v2.8: marca Cocina de Ecuador */
 .chip-ec { background: var(--ok-suave); color: var(--ok); border-color: var(--ok); font-size: .78rem; }
+
+/* v2.9: Ajustes en subpantallas, filtro País */
+.fila-t small.val { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+.gh.sep { margin-top: 2.25rem; }
+.chip-or { background: var(--tarjeta-2); color: var(--texto); border-color: var(--linea); }
+.sub-chips { margin-top: .6rem; padding-top: .6rem; border-top: .5px solid var(--linea); }
+.tarjeta.recom.otro { background: var(--tarjeta); border: 1px dashed var(--linea); }

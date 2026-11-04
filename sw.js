@@ -1,6 +1,6 @@
-/* Service worker — guarda toda la app (incluidas ilustraciones y fotos) para usarla sin internet.
-   Cambia VERSION al publicar cambios (y añade a ARCHIVOS cualquier archivo nuevo). */
-var VERSION = 'cocina-v2-8';
+/* Service worker â€” guarda toda la app (incluidas ilustraciones y fotos) para usarla sin internet.
+   Cambia VERSION al publicar cambios (y aÃ±ade a ARCHIVOS cualquier archivo nuevo). */
+var VERSION = 'cocina-v2-10';
 var ARCHIVOS = [
   './', 'index.html', 'styles.css', 'app.js', 'data/curso.json', 'data/sinonimos.json', 'manifest.webmanifest',
   'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png',
@@ -48,7 +48,7 @@ self.addEventListener('fetch', function (e) {
   var req = e.request;
   if (req.method !== 'GET') return;
   var url = new URL(req.url);
-  if (url.origin !== location.origin) return; // la app no pide nada a otros sitios (los enlaces de Créditos abren Unsplash en otra pestaña)
+  if (url.origin !== location.origin) return; // la app no pide nada a otros sitios (los enlaces de CrÃ©ditos abren Unsplash en otra pestaÃ±a)
   e.respondWith(
     caches.match(req, { ignoreSearch: true }).then(function (hit) {
       if (hit) return hit;
